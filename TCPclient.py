@@ -1,12 +1,12 @@
 import socket, os, struct
 
-registeredID = ['admin', 'guest', '1']
-passWord = {'admin': 'admin', 'guest': 'guest', '1': '1'}
+registeredID = ['admin', 'guest']
+passWord = {'admin': 'admin', 'guest': 'guest'}
 clientId = ''
 
 def clientlogin(id, pw):
-    registeredID = ['admin', 'guest', '1']
-    passWord = {'admin': 'admin', 'guest': 'guest', '1': '1'}
+    registeredID = ['admin', 'guest']
+    passWord = {'admin': 'admin', 'guest': 'guest'}
     # clientId = ''
     # id = input('ID: ')
     clientId = id
@@ -29,13 +29,13 @@ def clientTCPlink(serverName, serverPort, id):
     # serverPort = input('ServerPort: ')
     clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     clientSocket.connect((serverName, serverPort))
-    # clientSocket.send(id.encode())
+    clientSocket.send(id.encode())
     return clientSocket
 
 def sendText(clientSocket, text):
     # data = input('Data: ')
     clientSocket.send(text.encode())
-    recvData = clientSocket.recv(1024).decode()
+    recvData = clientSocket.recv(1024)
     return recvData
     # print(recvData)
 
@@ -48,13 +48,10 @@ def sendFile(clientSocket, filepath):
         data = fp.read(1024)
         if not data:
             print('{0} file send over...'.format(os.path.basename(filepath)))
-            ACK = clientSocket.recv(1024).decode()
-            print(ACK)
-            return ACK
+            break
         clientSocket.send(data)
-        print("sending")
-
-
+    ACK = clientSocket.recv(1024).decode()
+    return ACK
 
 
 # def clientTCPlink():

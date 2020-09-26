@@ -46,11 +46,14 @@ def recvFile(cnSocket):
                 fp.write(data)
             fp.close()
             print('end receive...')
+            Ack = '文件接收成功！'
+            cnSocket.send(Ack.encode())
+            cnSocket.close()
         # 传输结束断开连接
-        Ack = '文件接收成功！'
-        cnSocket.send(Ack.encode())
-        cnSocket.close()
+
         break
+
+
     # cnSocket.close()
 
 def recvText(cnSocket):

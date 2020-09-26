@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
-from main import Ui_MainWindow
 import socket
+from main import Ui_MainWindow
 from TCPclientLoginUI import TCPlientLoginUIWindow
 from serverUI import Ui_Server
 from clientUI import Ui_client
@@ -13,18 +13,18 @@ import time
 clientSocket = None  #全局变量 客户端Socket
 serverSocket = None  #全局变量 服务端Socket
 cnSocket = None #服务端连接Socket
-serverName = None
-serverPort = None
-whichProtocol = ''
+clientid = ''
+sendFileFlag = False
+sendTextFlag = False
 
 class mymainwindow(QtWidgets.QMainWindow, Ui_MainWindow):  #主页窗口
     def  __init__ (self):
         super(mymainwindow, self).__init__()
         self.setupUi(self)
-        self.TCPbutton.clicked.connect(self.enterLoginTCP)  #TCPclient
-        self.TCPbutton_2.clicked.connect(self.enterServerTCP)  #TCPserver
-        self.UDPbutton.clicked.connect(self.enterLoginUDP)  #UDPclient
-        self.UDPbutton_2.clicked.connect(self.enterServerUDP)  #UDPserver
+        self.TCPbutton.clicked.connect(self.enterLoginTCP)  # TCPclient
+        self.TCPbutton_2.clicked.connect(self.enterServerTCP)  # TCPserver
+        self.UDPbutton.clicked.connect(self.enterLoginUDP)  # UDPclient
+        self.UDPbutton_2.clicked.connect(self.enterServerUDP)  # UDPserver
 
     def enterLoginTCP(self):
         global whichProtocol
@@ -85,17 +85,14 @@ class mytcploginwindow(QtWidgets.QMainWindow, TCPlientLoginUIWindow):
             self.errMessage.setVisible(True)
 
     def connect(self):
-        global clientSocket, serverName, serverPort, whichProtocol
-        serverName = str(self.idInput.text())
-        serverPort = int(self.pwInput.text()) # 端口号是数字而非字符串
-        print(serverName, serverPort)
-        # clientSocket = TCPclient.clientTCPlink(serverName, serverPort, clientid)
-        clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        clientSocket.connect((serverName, serverPort))
-        # clientSocket.send(id.encode())
-        print(clientSocket)
+        global clientSocket, clientid
+        testFlag = True     #测试功能指示符，True代表正在测试
+        if testFlag != True:
+            serverName = str(self.idInput.text())
+            serverPort = str(self.pwInput.text())
+            clientSocket = TCPclient.clientTCPlink(serverName, serverPort, clientid)
         myclientwindow().clientshow()
-        # self.close()
+        self.close()
 
 
 class myserverwindow(QtWidgets.QMainWindow, Ui_Server):
@@ -113,7 +110,7 @@ class myserverwindow(QtWidgets.QMainWindow, Ui_Server):
         self.show()
         global serverSocket, cnSocket, clientid, clientAddr
         # legalAddr, serverSocket = TCPserver.listenServerTCPlink()
-        serverIP = '192.168.1.105'  # 当前服务端的IP地址
+        serverIP = '192.168.1.108'  # 当前服务端的IP地址
         serverPort = 12000
         serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         serverSocket.bind((serverIP, serverPort))
@@ -146,6 +143,7 @@ class myserverwindow(QtWidgets.QMainWindow, Ui_Server):
             print(self.recvTextRadioButton.isChecked())
             if self.recvFileRadioButton.isChecked() == True:
                 TCPserver.recvFile(cnSocket)
+                print(111)
                 newText = "\n$ 文件已接受！"
                 self.serverInfoEdit.append(newText)
 
@@ -181,8 +179,9 @@ class myserverwindow(QtWidgets.QMainWindow, Ui_Server):
     def btnstate(self, btn):
         print(btn.text())
 
+
 class myclientwindow(QtWidgets.QMainWindow, Ui_client):
-    def  __init__ (self):
+    def __init__(self):
         super(myclientwindow, self).__init__()
         self.setupUi(self)
         self.SendTextButton.clicked.connect(self.sendText)
@@ -195,7 +194,7 @@ class myclientwindow(QtWidgets.QMainWindow, Ui_client):
         self.serverACKEdit.setText("￥ 已连接服务端")
         self.sendTextEdit.setText('请输入要发送的文本：')
 
-    def sendText(self): # TODO 发送文本至服务端
+    def sendText(self):  # TODO 发送文本至服务端
         global clientSocket
         # sendTextFlag = True
         text = self.sendTextEdit.toPlainText()
@@ -204,7 +203,7 @@ class myclientwindow(QtWidgets.QMainWindow, Ui_client):
 
         self.serverACKEdit.setText("￥ 连接已被服务端关闭")
 
-    def sendFile(self): # TODO 发送文件至服务端
+    def sendFile(self):  # TODO 发送文件至服务端
         global clientSocket
         # sendFileFlag = True
         fileNamePlus = QtWidgets.QFileDialog.getOpenFileName(self, '选择文件', '')
@@ -220,7 +219,7 @@ class myclientwindow(QtWidgets.QMainWindow, Ui_client):
         clientSocket.connect((serverName, serverPort))
         self.serverACKEdit.append('\n￥ 重新连接成功')
 
-    def exit(self): # 关闭连接并退出
+    def exit(self):  # 关闭连接并退出
         global clientSocket
         clientSocket.close()
 
