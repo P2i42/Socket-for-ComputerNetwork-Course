@@ -1,6 +1,6 @@
 import socket, struct, time
 
-#TODO  判断用户身份是否合法为合法用户 echo 数据
+# 判断用户身份是否合法为合法用户 echo 数据
 # legalAddr = ['192.168.1.107']
 
 def listenServerTCPlink():
@@ -46,22 +46,16 @@ def recvFile(cnSocket):
                 fp.write(data)
             fp.close()
             print('end receive...')
-            Ack = '文件接收成功！'
-            cnSocket.send(Ack.encode())
-            cnSocket.close()
         # 传输结束断开连接
-
+        Ack = '文件接收成功！'
+        cnSocket.send(Ack.encode())
+        cnSocket.close()
         break
-
-
     # cnSocket.close()
 
 def recvText(cnSocket):
-    # while (True):
-    # cnSocket, addr = serverSocket.accept()
     recvData = cnSocket.recv(1024).decode()
     Ack = '{ ' + recvData + ' } ' + '接受成功!'
     cnSocket.send(Ack.encode())
     return Ack
-    # cnSocket.close()
 
