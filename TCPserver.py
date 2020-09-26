@@ -54,11 +54,8 @@ def recvFile(cnSocket):
     # cnSocket.close()
 
 def recvText(cnSocket):
-    # while (True):
-    # cnSocket, addr = serverSocket.accept()
     recvData = cnSocket.recv(1024).decode()
     Ack = '{ ' + recvData + ' } ' + '接受成功!'
     cnSocket.send(Ack.encode())
     return Ack
-    # cnSocket.close()
 
