@@ -1,5 +1,4 @@
 # Socket-for-ComputerNetwork-Course
-
 1. 运行mainUI.py 出现主界面，双开界面一个用于客户端，一个服务端
 
 2. 点击TCPserver或UDPserver按钮进入对应服务端界面，默认状态为仅接受文字
