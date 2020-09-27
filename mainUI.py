@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets
 from main import Ui_MainWindow
 import socket
 from TCPclientLoginUI import TCPlientLoginUIWindow
@@ -8,7 +8,6 @@ import TCPclient
 import TCPserver
 import UDPclient
 import UDPserver
-import time
 
 clientSocket = None  #全局变量 客户端Socket
 serverSocket = None  #全局变量 服务端Socket
@@ -132,7 +131,6 @@ class myserverwindow(QtWidgets.QMainWindow, Ui_Server):
     def servershow(self):
         self.show()
         global serverSocket, cnSocket, clientid, clientAddr, whichProtocol
-        # legalAddr, serverSocket = TCPserver.listenServerTCPlink()
         serverIP = '192.168.1.106'  # 当前服务端的IP地址
         serverPort = 12000
         if whichProtocol == 'TCP':
@@ -142,7 +140,7 @@ class myserverwindow(QtWidgets.QMainWindow, Ui_Server):
             self.serverInfoEdit.setText("$ TCP 正在监听客户端发起的连接...")
             print(serverSocket)
         else:
-            serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            serverSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             serverSocket.bind((serverIP, serverPort))
             self.serverInfoEdit.setText("$ UDP服务端Socket已创建...")
 
@@ -187,26 +185,24 @@ class myserverwindow(QtWidgets.QMainWindow, Ui_Server):
             self.serverInfoEdit.append(newText)
 
         else:   # UDP接受模块
-            self.userInfoEdit.setText(str('上次的UDP客户端：\n' +
-                                          '客户地址：' + str(clientAddr[0]) + '\n' +
-                                          '端口号：' + str(clientAddr[1])))
             # 接受的是文件还是文字？ 通过radioButton选择
-            print(self.recvFileRadioButton.isChecked())
-            print(self.recvTextRadioButton.isChecked())
+            clientAddr = None
             if self.recvFileRadioButton.isChecked() == True:    # UDP接受文件
-                Ack = UDPserver.recvFile(serverSocket, legalAddr)
+                Ack, clientAddr = UDPserver.recvFile(serverSocket, legalAddr)
                 newText = Ack
                 self.serverInfoEdit.append(newText)
 
             if self.recvTextRadioButton.isChecked() == True:    # UDP接受文本
-                Ack = UDPserver.recvText(serverSocket, legalAddr)
+                Ack, clientAddr = UDPserver.recvText(serverSocket, legalAddr)
                 print(Ack)
                 newText = "\n$ " + Ack
                 self.serverInfoEdit.append(newText)
+            self.userInfoEdit.setText(str('上次的UDP客户端：\n' +
+                                  '客户地址：' + str(clientAddr[0]) + '\n' +
+                                  '端口号：' + str(clientAddr[1])))
 
 
-
-    def closeConnection(self): #TODO 关闭ServerSocket
+    def closeConnection(self): # 关闭ServerSocket
         global serverSocket, whichProtocol
         if serverSocket != None:
             serverSocket.close()
@@ -276,7 +272,7 @@ class myclientwindow(QtWidgets.QMainWindow, Ui_client):
             self.serverACKEdit.append("￥ 单次UDP发送结束")
 
     def reconnect(self):
-        global serverName, serverPort
+        global serverName, serverPort, clientSocket
         clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         clientSocket.connect((serverName, serverPort))
         print(clientSocket)
@@ -296,8 +292,6 @@ if __name__ == '__main__':
     clientui = myclientwindow()
     mainui.show()
     mainui.TCPbutton.clicked.connect(tcploginui.loginshow)
-    # mainui.TCPbutton_2.clicked.connect(serverui.servershow)
     mainui.UDPbutton.clicked.connect(tcploginui.loginshow)
-    mainui.UDPbutton_2.clicked.connect(serverui.servershow)
     tcploginui.connectButton.clicked.connect(clientui.clientshow)
     sys.exit(app.exec_())

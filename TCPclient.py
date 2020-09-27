@@ -1,9 +1,5 @@
 import socket, os, struct
 
-registeredID = ['admin', 'guest', '1']
-passWord = {'admin': 'admin', 'guest': 'guest', '1': '1'}
-clientId = ''
-
 def clientlogin(id, pw):
     registeredID = ['admin', 'guest', '1']
     passWord = {'admin': 'admin', 'guest': 'guest', '1': '1'}
@@ -23,13 +19,9 @@ def clientlogin(id, pw):
 def closeSocket():
     return False
 
-def clientTCPlink(serverName, serverPort, id):
-    # closeFlag = True    #未手动关闭
-    # serverName = input('ServerName: ')
-    # serverPort = input('ServerPort: ')
+def clientTCPlink(serverName, serverPort):
     clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     clientSocket.connect((serverName, serverPort))
-    # clientSocket.send(id.encode())
     return clientSocket
 
 def sendText(clientSocket, text):
@@ -40,9 +32,9 @@ def sendText(clientSocket, text):
     # print(recvData)
 
 def sendFile(clientSocket, filepath):
-    fileinfo_size = struct.calcsize('128sl')
-    fhead = struct.pack('128sl', os.path.basename(filepath).encode('utf-8'), os.stat(filepath).st_size)
-    clientSocket.send(fhead)
+    fileInfoSize = struct.calcsize('128sl')
+    header = struct.pack('128sl', os.path.basename(filepath).encode('utf-8'), os.stat(filepath).st_size)
+    clientSocket.send(header)
     fp = open(filepath, 'rb')
     while True:
         data = fp.read(1024)
@@ -54,20 +46,3 @@ def sendFile(clientSocket, filepath):
         clientSocket.send(data)
         print("sending")
 
-
-
-
-# def clientTCPlink():
-#     if clientlogin():
-#         closeFlag = True    #未手动关闭
-#         serverName = input('ServerName: ')
-#         serverPort = input('ServerPort: ')
-#         clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#         clientSocket.connect((serverName, serverPort))
-#         while(closeFlag):
-#             data = input('Data: ')
-#             clientSocket.send(data.encode())
-#             recvData = clientSocket.recv(1024)
-#             print(recvData)
-
-# print(clientlogin('admin', 'admin'))
