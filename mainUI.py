@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets
 from main import Ui_MainWindow
 import socket
 from TCPclientLoginUI import TCPlientLoginUIWindow
@@ -8,7 +8,6 @@ import TCPclient
 import TCPserver
 import UDPclient
 import UDPserver
-import time
 
 clientSocket = None  #全局变量 客户端Socket
 serverSocket = None  #全局变量 服务端Socket
@@ -132,7 +131,6 @@ class myserverwindow(QtWidgets.QMainWindow, Ui_Server):
     def servershow(self):
         self.show()
         global serverSocket, cnSocket, clientid, clientAddr, whichProtocol
-        # legalAddr, serverSocket = TCPserver.listenServerTCPlink()
         serverIP = '192.168.1.106'  # 当前服务端的IP地址
         serverPort = 12000
         if whichProtocol == 'TCP':
@@ -148,7 +146,7 @@ class myserverwindow(QtWidgets.QMainWindow, Ui_Server):
 
     def waitConnection(self):
         print("waiting")
-        global serverSocket, cnSocket, clientid, clientAddr, whichProtocol
+        global serverSocket, cnSocket, clientid, clientAddr
         # legalAddr, serverSocket = TCPserver.listenServerTCPlink()
         legalAddr = ['192.168.1.108',
                      '192.168.1.107',
@@ -156,7 +154,6 @@ class myserverwindow(QtWidgets.QMainWindow, Ui_Server):
                      '192.168.1.105',
                      '10.89.72.41']
         print(serverSocket)
-        print(whichProtocol)
         if whichProtocol == 'TCP':
             cnSocket, clientAddr = serverSocket.accept()
             print(cnSocket)
@@ -189,8 +186,6 @@ class myserverwindow(QtWidgets.QMainWindow, Ui_Server):
 
         else:   # UDP接受模块
             # 接受的是文件还是文字？ 通过radioButton选择
-            print(self.recvFileRadioButton.isChecked())
-            print(self.recvTextRadioButton.isChecked())
             clientAddr = None
             if self.recvFileRadioButton.isChecked() == True:    # UDP接受文件
                 Ack, clientAddr = UDPserver.recvFile(serverSocket, legalAddr)
@@ -203,12 +198,11 @@ class myserverwindow(QtWidgets.QMainWindow, Ui_Server):
                 newText = "\n$ " + Ack
                 self.serverInfoEdit.append(newText)
             self.userInfoEdit.setText(str('上次的UDP客户端：\n' +
-                                          '客户地址：' + str(clientAddr[0]) + '\n' +
-                                          '端口号：' + str(clientAddr[1])))
+                                  '客户地址：' + str(clientAddr[0]) + '\n' +
+                                  '端口号：' + str(clientAddr[1])))
 
 
-
-    def closeConnection(self): #TODO 关闭ServerSocket
+    def closeConnection(self): # 关闭ServerSocket
         global serverSocket, whichProtocol
         if serverSocket != None:
             serverSocket.close()
@@ -255,12 +249,13 @@ class myclientwindow(QtWidgets.QMainWindow, Ui_client):
         if whichProtocol == 'TCP':
             recvData = TCPclient.sendText(clientSocket, text)
             self.serverACKEdit.append('￥ ' + recvData)
-            self.serverACKEdit.setText("￥ TCP连接已被服务端关闭")
+            self.serverACKEdit.append("￥ TCP连接已被服务端关闭")
         else:
-
+            print(text)
             recvData = UDPclient.sendText(clientSocket, text, serverPort, serverName)
+            print(text)
             self.serverACKEdit.append('￥ ' + recvData)
-            self.serverACKEdit.setText("￥ 单次UDP发送结束")
+            self.serverACKEdit.append("￥ 单次UDP发送结束")
 
     def sendFile(self): # 发送文件至服务端
         global clientSocket, whichProtocol, serverPort, serverName
@@ -270,21 +265,23 @@ class myclientwindow(QtWidgets.QMainWindow, Ui_client):
         if whichProtocol == 'TCP':
             ACK = TCPclient.sendFile(clientSocket, file)
             self.serverACKEdit.append('￥ ' + file + ACK)
-            self.serverACKEdit.setText("￥ TCP连接已被服务端关闭")
+            self.serverACKEdit.append("￥ TCP连接已被服务端关闭")
         else:
             ACK = UDPclient.sendFile(clientSocket, file, serverPort, serverName)
             self.serverACKEdit.append('￥ ' + file + ACK)
-            self.serverACKEdit.setText("￥ 单次UDP发送结束")
+            self.serverACKEdit.append("￥ 单次UDP发送结束")
 
     def reconnect(self):
-        global serverName, serverPort
+        global serverName, serverPort, clientSocket
         clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         clientSocket.connect((serverName, serverPort))
+        print(clientSocket)
         self.serverACKEdit.append('\n￥ 重新连接成功')
 
     def exit(self): # 关闭连接并退出
         global clientSocket
         clientSocket.close()
+        self.close()
 
 if __name__ == '__main__':
     import sys
@@ -295,8 +292,6 @@ if __name__ == '__main__':
     clientui = myclientwindow()
     mainui.show()
     mainui.TCPbutton.clicked.connect(tcploginui.loginshow)
-    # mainui.TCPbutton_2.clicked.connect(serverui.servershow)
     mainui.UDPbutton.clicked.connect(tcploginui.loginshow)
-    # mainui.UDPbutton_2.clicked.connect(serverui.servershow)
     tcploginui.connectButton.clicked.connect(clientui.clientshow)
     sys.exit(app.exec_())
