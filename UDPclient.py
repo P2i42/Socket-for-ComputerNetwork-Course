@@ -24,7 +24,9 @@ def closeSocket():
 
 def sendText(clientSocket, text, serverPort, serverName):
     clientSocket.sendto(text.encode(), (serverName, serverPort))
-    recvData = clientSocket.recvfrom(2048)
+    print('send already')
+    # recvData = clientSocket.recvfrom(2048)
+    recvData = "{ " + text + "}" + "已发送"
     return recvData
 
 def sendFile(clientSocket, filepath, serverPort, serverName):
@@ -37,10 +39,12 @@ def sendFile(clientSocket, filepath, serverPort, serverName):
         data = fp.read(1024)
         if not data:
             print('{0} file send over...'.format(os.path.basename(filepath)))
-            break
+            ACK = " 已发送"
+            return ACK
         clientSocket.sendto(data, server)
-    ACK = clientSocket.recv(1024).decode()
-    return ACK
+        print('sending')
+    # ACK = clientSocket.recv(1024).decode()
+
 
 
 # def clientUDPlink():

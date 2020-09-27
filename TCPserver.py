@@ -1,6 +1,6 @@
 import socket, struct, time
 
-#TODO  判断用户身份是否合法为合法用户 echo 数据
+# 判断用户身份是否合法为合法用户 echo 数据
 # legalAddr = ['192.168.1.107']
 
 def listenServerTCPlink():
@@ -9,7 +9,7 @@ def listenServerTCPlink():
                  '192.168.1.106',
                  '192.168.1.105',
                  '10.89.72.41']
-    serverIP = '192.168.1.108' # 当前服务端的IP地址
+    serverIP = '192.168.1.106' # 当前服务端的IP地址
     serverPort = 12000
     serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serverSocket.bind((serverIP, serverPort))

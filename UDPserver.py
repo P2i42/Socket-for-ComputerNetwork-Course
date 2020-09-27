@@ -10,7 +10,7 @@ def serverUDPCreate():
                  '192.168.1.106',
                  '192.168.1.105',
                  '10.89.72.41']
-    serverIP = '192.168.1.108'  # 当前服务端的IP地址
+    serverIP = '192.168.1.106'  # 当前服务端的IP地址
     serverPort = 12000
     serverSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     serverSocket.bind((serverIP, serverPort))

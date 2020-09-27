@@ -85,7 +85,7 @@ class mytcploginwindow(QtWidgets.QMainWindow, TCPlientLoginUIWindow):
             else:
                 self.errMessage.setVisible(True)
         else:
-            if TCPclient.clientlogin(idText, pwText) == True:
+            if UDPclient.clientlogin(idText, pwText) == True:
                 # 切换为连接界面
                 self.idInput.clear()
                 self.pwInput.clear()  # 切换为服务端地址和端口号的输入框
@@ -133,13 +133,13 @@ class myserverwindow(QtWidgets.QMainWindow, Ui_Server):
         self.show()
         global serverSocket, cnSocket, clientid, clientAddr, whichProtocol
         # legalAddr, serverSocket = TCPserver.listenServerTCPlink()
-        serverIP = '192.168.1.105'  # 当前服务端的IP地址
+        serverIP = '192.168.1.106'  # 当前服务端的IP地址
         serverPort = 12000
         if whichProtocol == 'TCP':
             serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             serverSocket.bind((serverIP, serverPort))
             serverSocket.listen(1)
-            self.serverInfoEdit.setText("$ 正在监听客户端发起的连接...")
+            self.serverInfoEdit.setText("$ TCP 正在监听客户端发起的连接...")
             print(serverSocket)
         else:
             serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -164,7 +164,7 @@ class myserverwindow(QtWidgets.QMainWindow, Ui_Server):
                 self.userInfoEdit.setText(str('TCP客户端已连接！\n' +
                                              '客户地址：' + str(clientAddr[0])+ '\n' +
                                               '端口号：' + str(clientAddr[1])))
-                # TODO 接受的是文件还是文字？
+                # 接受的是文件还是文字？
                 # 通过radioButton选择
                 print(self.recvFileRadioButton.isChecked())
                 print(self.recvTextRadioButton.isChecked())
@@ -247,20 +247,21 @@ class myclientwindow(QtWidgets.QMainWindow, Ui_client):
             self.serverACKEdit.setText("UDP Socket准备就绪")
         self.sendTextEdit.setText('请输入要发送的文本：')
 
-    def sendText(self): # TODO 发送文本至服务端
+    def sendText(self): # 发送文本至服务端
         global clientSocket, whichProtocol, serverPort, serverName
         text = self.sendTextEdit.toPlainText()
         if whichProtocol == 'TCP':
             recvData = TCPclient.sendText(clientSocket, text)
             self.serverACKEdit.append('￥ ' + recvData)
-            self.serverACKEdit.setText("￥ TCP连接已被服务端关闭")
+            self.serverACKEdit.append("￥ TCP连接已被服务端关闭")
         else:
-
+            print(text)
             recvData = UDPclient.sendText(clientSocket, text, serverPort, serverName)
+            print(text)
             self.serverACKEdit.append('￥ ' + recvData)
-            self.serverACKEdit.setText("￥ 单次UDP发送结束")
+            self.serverACKEdit.append("￥ 单次UDP发送结束")
 
-    def sendFile(self): # TODO 发送文件至服务端
+    def sendFile(self): # 发送文件至服务端
         global clientSocket, whichProtocol, serverPort, serverName
         fileNamePlus = QtWidgets.QFileDialog.getOpenFileName(self, '选择文件', '')
         file = fileNamePlus[0]
@@ -268,21 +269,23 @@ class myclientwindow(QtWidgets.QMainWindow, Ui_client):
         if whichProtocol == 'TCP':
             ACK = TCPclient.sendFile(clientSocket, file)
             self.serverACKEdit.append('￥ ' + file + ACK)
-            self.serverACKEdit.setText("￥ TCP连接已被服务端关闭")
+            self.serverACKEdit.append("￥ TCP连接已被服务端关闭")
         else:
             ACK = UDPclient.sendFile(clientSocket, file, serverPort, serverName)
             self.serverACKEdit.append('￥ ' + file + ACK)
-            self.serverACKEdit.setText("￥ 单次UDP发送结束")
+            self.serverACKEdit.append("￥ 单次UDP发送结束")
 
     def reconnect(self):
         global serverName, serverPort
         clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         clientSocket.connect((serverName, serverPort))
+        print(clientSocket)
         self.serverACKEdit.append('\n￥ 重新连接成功')
 
     def exit(self): # 关闭连接并退出
         global clientSocket
         clientSocket.close()
+        self.close()
 
 if __name__ == '__main__':
     import sys
