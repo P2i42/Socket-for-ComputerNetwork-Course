@@ -85,7 +85,7 @@ class mytcploginwindow(QtWidgets.QMainWindow, TCPlientLoginUIWindow):
             else:
                 self.errMessage.setVisible(True)
         else:
-            if TCPclient.clientlogin(idText, pwText) == True:
+            if UDPclient.clientlogin(idText, pwText) == True:
                 # 切换为连接界面
                 self.idInput.clear()
                 self.pwInput.clear()  # 切换为服务端地址和端口号的输入框
@@ -133,22 +133,22 @@ class myserverwindow(QtWidgets.QMainWindow, Ui_Server):
         self.show()
         global serverSocket, cnSocket, clientid, clientAddr, whichProtocol
         # legalAddr, serverSocket = TCPserver.listenServerTCPlink()
-        serverIP = '192.168.1.105'  # 当前服务端的IP地址
+        serverIP = '192.168.1.106'  # 当前服务端的IP地址
         serverPort = 12000
         if whichProtocol == 'TCP':
             serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             serverSocket.bind((serverIP, serverPort))
             serverSocket.listen(1)
-            self.serverInfoEdit.setText("$ 正在监听客户端发起的连接...")
+            self.serverInfoEdit.setText("$ TCP 正在监听客户端发起的连接...")
             print(serverSocket)
         else:
-            serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            serverSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             serverSocket.bind((serverIP, serverPort))
             self.serverInfoEdit.setText("$ UDP服务端Socket已创建...")
 
     def waitConnection(self):
         print("waiting")
-        global serverSocket, cnSocket, clientid, clientAddr
+        global serverSocket, cnSocket, clientid, clientAddr, whichProtocol
         # legalAddr, serverSocket = TCPserver.listenServerTCPlink()
         legalAddr = ['192.168.1.108',
                      '192.168.1.107',
@@ -156,6 +156,7 @@ class myserverwindow(QtWidgets.QMainWindow, Ui_Server):
                      '192.168.1.105',
                      '10.89.72.41']
         print(serverSocket)
+        print(whichProtocol)
         if whichProtocol == 'TCP':
             cnSocket, clientAddr = serverSocket.accept()
             print(cnSocket)
@@ -187,22 +188,23 @@ class myserverwindow(QtWidgets.QMainWindow, Ui_Server):
             self.serverInfoEdit.append(newText)
 
         else:   # UDP接受模块
-            self.userInfoEdit.setText(str('上次的UDP客户端：\n' +
-                                          '客户地址：' + str(clientAddr[0]) + '\n' +
-                                          '端口号：' + str(clientAddr[1])))
             # 接受的是文件还是文字？ 通过radioButton选择
             print(self.recvFileRadioButton.isChecked())
             print(self.recvTextRadioButton.isChecked())
+            clientAddr = None
             if self.recvFileRadioButton.isChecked() == True:    # UDP接受文件
-                Ack = UDPserver.recvFile(serverSocket, legalAddr)
+                Ack, clientAddr = UDPserver.recvFile(serverSocket, legalAddr)
                 newText = Ack
                 self.serverInfoEdit.append(newText)
 
             if self.recvTextRadioButton.isChecked() == True:    # UDP接受文本
-                Ack = UDPserver.recvText(serverSocket, legalAddr)
+                Ack, clientAddr = UDPserver.recvText(serverSocket, legalAddr)
                 print(Ack)
                 newText = "\n$ " + Ack
                 self.serverInfoEdit.append(newText)
+            self.userInfoEdit.setText(str('上次的UDP客户端：\n' +
+                                          '客户地址：' + str(clientAddr[0]) + '\n' +
+                                          '端口号：' + str(clientAddr[1])))
 
 
 
@@ -295,6 +297,6 @@ if __name__ == '__main__':
     mainui.TCPbutton.clicked.connect(tcploginui.loginshow)
     # mainui.TCPbutton_2.clicked.connect(serverui.servershow)
     mainui.UDPbutton.clicked.connect(tcploginui.loginshow)
-    mainui.UDPbutton_2.clicked.connect(serverui.servershow)
+    # mainui.UDPbutton_2.clicked.connect(serverui.servershow)
     tcploginui.connectButton.clicked.connect(clientui.clientshow)
     sys.exit(app.exec_())

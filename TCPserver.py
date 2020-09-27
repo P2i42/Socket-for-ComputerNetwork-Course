@@ -9,7 +9,7 @@ def listenServerTCPlink():
                  '192.168.1.106',
                  '192.168.1.105',
                  '10.89.72.41']
-    serverIP = '192.168.1.108' # 当前服务端的IP地址
+    serverIP = '192.168.1.106' # 当前服务端的IP地址
     serverPort = 12000
     serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serverSocket.bind((serverIP, serverPort))
@@ -22,12 +22,14 @@ def recvFile(cnSocket):
         fileinfo_size = struct.calcsize('128sl')
         # 接收文件名与文件大小信息
         buf = cnSocket.recv(fileinfo_size)
+        filename = ''
         # 判断是否接收到文件头信息
         if buf:
             # 获取文件名和文件大小
             filename, filesize = struct.unpack('128sl', buf)
             fn = filename.strip(b'\00')
             fn = fn.decode()
+            filename = str(fn)
             print('file new name is {0}, filesize if {1}'.format(str(fn), filesize))
 
             recvd_size = 0  # 定义已接收文件的大小
@@ -47,7 +49,7 @@ def recvFile(cnSocket):
             fp.close()
             print('end receive...')
         # 传输结束断开连接
-        Ack = '文件接收成功！'
+        Ack = filename + ' 文件接收成功！'
         cnSocket.send(Ack.encode())
         cnSocket.close()
         break
